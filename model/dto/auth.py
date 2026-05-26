@@ -1,13 +1,64 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field
+
+
+# ---------------------------------------------------------------------------
+# Shared token response
+# ---------------------------------------------------------------------------
+
+class AuthTokenResponse(BaseModel):
+    """Token pair returned on successful authentication."""
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+
+
+# ---------------------------------------------------------------------------
+# Register
+# ---------------------------------------------------------------------------
+
+class RegisterRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=6, description="Minimum 6 characters")
+    full_name: str = Field(min_length=1, max_length=100)
+    account_name: str = Field(min_length=1, max_length=255)
+
+
+class RegisterResponse(BaseModel):
+    user_id: str
+    email: str
+    full_name: str
+    account_name: str
+    tokens: AuthTokenResponse
+
+
+# ---------------------------------------------------------------------------
+# Login
+# ---------------------------------------------------------------------------
 
 class LoginRequest(BaseModel):
-    email: str
+    email: EmailStr
     password: str
 
+
 class LoginResponse(BaseModel):
-    userId: int
-    fullName: str
-    avatarUrl: str
+    user_id: str
+    full_name: str
+    avatar_url: str
     email: str
     coins: int
-    token: str
+    current_streak: int
+    longest_streak: int
+    tokens: AuthTokenResponse
+
+
+# ---------------------------------------------------------------------------
+# Refresh / Logout
+# ---------------------------------------------------------------------------
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
+
+
+class RefreshTokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
