@@ -1,5 +1,7 @@
+import uuid as _uuid
 from typing import TYPE_CHECKING, Optional
 
+from sqlalchemy import ForeignKeyConstraint
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
@@ -8,12 +10,24 @@ if TYPE_CHECKING:
 
 
 class WordSetCrossRef(SQLModel, table=True):
-    """Many-to-many link between words and word_sets."""
+    """Many-to-many link between words and word_sets per user."""
 
     __tablename__ = "word_set_cross_ref"
 
-    word_id: int = Field(foreign_key="words.word_id", primary_key=True)
-    set_id: int = Field(foreign_key="word_sets.set_id", primary_key=True)
+    user_id: _uuid.UUID = Field(primary_key=True)
+    word_id: int = Field(primary_key=True)
+    set_id: int = Field(primary_key=True)
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["user_id", "word_id"],
+            ["words.user_id", "words.word_id"],
+        ),
+        ForeignKeyConstraint(
+            ["user_id", "set_id"],
+            ["word_sets.user_id", "word_sets.set_id"],
+        ),
+    )
 
     # Relationships
     word: Optional["Word"] = Relationship(back_populates="word_sets")

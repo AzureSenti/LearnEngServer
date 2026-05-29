@@ -1,6 +1,7 @@
 import uuid as _uuid
 from typing import TYPE_CHECKING, Optional
 
+from sqlalchemy import ForeignKeyConstraint
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
@@ -13,8 +14,19 @@ class UserWordSetCrossRef(SQLModel, table=True):
 
     __tablename__ = "user_word_set_cross_ref"
 
-    user_id: _uuid.UUID = Field(foreign_key="users.user_id", primary_key=True)
-    set_id: int = Field(foreign_key="word_sets.set_id", primary_key=True)
+    user_id: _uuid.UUID = Field(primary_key=True)
+    set_id: int = Field(primary_key=True)
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["user_id"],
+            ["users.user_id"],
+        ),
+        ForeignKeyConstraint(
+            ["user_id", "set_id"],
+            ["word_sets.user_id", "word_sets.set_id"],
+        ),
+    )
 
     # Relationships
     user: Optional["User"] = Relationship(back_populates="word_sets")

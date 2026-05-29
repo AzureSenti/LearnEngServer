@@ -2,7 +2,10 @@ from sqlmodel import Session, SQLModel, create_engine
 
 from core.config import settings
 
-engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
+engine = create_engine(
+    str(settings.SQLALCHEMY_DATABASE_URI),
+    connect_args={"prepare_threshold": None},
+)
 
 
 def init_db() -> None:
@@ -20,6 +23,8 @@ def init_db() -> None:
     from model.entity.word import Word  # noqa: F401
     from model.entity.word_set import WordSet  # noqa: F401
     from model.entity.word_set_cross_ref import WordSetCrossRef  # noqa: F401
+    from model.entity.word_srs import WordSrs  # noqa: F401
+    from model.entity.user_grammar_progress import UserGrammarProgress  # noqa: F401
 
     SQLModel.metadata.create_all(engine)
 
