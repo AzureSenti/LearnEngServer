@@ -20,7 +20,12 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=6, description="Minimum 6 characters")
     full_name: str = Field(min_length=1, max_length=100)
-    account_name: str = Field(min_length=1, max_length=255)
+    account_name: str = Field(
+        min_length=1,
+        max_length=255,
+        pattern=r"^[a-z0-9_]+$",
+        description="Only lowercase letters, numbers, and underscores are allowed"
+    )
 
 
 class RegisterResponse(BaseModel):
@@ -36,7 +41,7 @@ class RegisterResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 class LoginRequest(BaseModel):
-    email: EmailStr
+    identifier: str = Field(description="Email or account name")
     password: str
 
 
@@ -45,6 +50,7 @@ class LoginResponse(BaseModel):
     full_name: str
     avatar_url: str
     email: str
+    account_name: str
     coins: int
     current_streak: int
     longest_streak: int

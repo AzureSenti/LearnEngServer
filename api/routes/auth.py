@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session, select
+from sqlmodel import Session, select, or_
 
 from core.db import get_session
 from core.security import (
@@ -48,15 +48,23 @@ async def register(
     3. Create an ``Account`` linked to the user.
     4. Issue access + refresh tokens.
     """
-    # Check for existing email
+    # Check for existing email or account_name
     existing = session.exec(
-        select(Account).where(Account.email == request.email)
+        select(Account).where(
+            or_(Account.email == request.email, Account.account_name == request.account_name)
+        )
     ).first()
     if existing:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Email already registered",
-        )
+        if existing.email == request.email:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Email already registered",
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Account name already registered",
+            )
 
     # Create user profile
     user = User(full_name=request.full_name)
@@ -115,21 +123,24 @@ async def login(
     3. Fetch linked ``User`` profile.
     4. Issue access + refresh tokens.
     """
-    # Find account by email
+
+    # Find account by email or account_name
     account = session.exec(
-        select(Account).where(Account.email == request.email)
+        select(Account).where(
+            or_(Account.email == request.identifier, Account.account_name == request.identifier)
+        )
     ).first()
     if not account:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
+            detail="Incorrect identifier or password",
         )
 
     # Verify password
     if not verify_password(request.password, account.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
+            detail="Incorrect identifier or password",
         )
 
     # Fetch user profile
@@ -158,6 +169,7 @@ async def login(
         full_name=user.full_name,
         avatar_url=user.avatar_url,
         email=account.email,
+        account_name=account.account_name,
         coins=user.coins,
         current_streak=user.current_streak,
         longest_streak=user.longest_streak,
@@ -166,7 +178,6 @@ async def login(
             refresh_token=refresh_token_str,
         ),
     )
-
 
 # ---------------------------------------------------------------------------
 # Refresh

@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from api.routes import auth
 from api.routes import sync
+from api.routes import user
 from core.config import settings
 from core.db import init_db
 
@@ -32,6 +33,7 @@ app.add_middleware(
 
 app.include_router(auth.router, prefix=settings.API_V1_STR)
 app.include_router(sync.router, prefix=settings.API_V1_STR)
+app.include_router(user.router, prefix=settings.API_V1_STR)
 
 
 @app.get("/")

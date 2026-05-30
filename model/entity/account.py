@@ -13,7 +13,7 @@ class Account(SQLModel, table=True):
     __tablename__ = "accounts"
 
     account_id: _uuid.UUID = Field(default_factory=_uuid.uuid4, primary_key=True)
-    account_name: str = Field(max_length=255)
+    account_name: str = Field(unique=True, index=True, max_length=255)
     email: str = Field(unique=True, index=True, max_length=255)
     password_hash: str = Field(max_length=255)
     user_id: _uuid.UUID = Field(foreign_key="users.user_id")
